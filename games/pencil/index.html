@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>点格棋</title>
+<!-- css START -->
+<style>
+    a {text-decoration:none;color:blue;}
+
+    textarea,input[type=button],#result,input[type=text],select {
+        font-size:1.3em;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    }
+    
+    textarea,input[type=text],select {
+        border: 1px solid #ccc;
+        border-radius: 2px;
+        box-shadow: 0px 0px 2px #B6B6B6;
+    }
+
+    textarea,.weakresult,.result,input[type=text],select {background-color:rgba(252, 252, 252, 0.4);}
+    
+    input[type=button] {
+        -webkit-appearance:none;
+
+        background: #eaefea;
+        border: 1px solid #eaefea;
+        padding: 4px 11px;
+        color: #777;
+        box-shadow: 0px 0px 2px #B6B6B6;
+        border-radius: 1px;
+        text-shadow: 1px 1px 1px #3F9E3F;
+        cursor: pointer;
+    }
+
+    input[type=button]:hover,textarea:hover,input[type=text]:hover,select:hover { 
+        border: 1px solid rgb(87, 198, 232);
+        box-shadow: 0px 0px 3px rgb(87, 198, 232);
+    }
+
+    .main{padding: 5px;}
+
+    .weakresult {color: gray;opacity: 0.4;filter: alpha(opacity= 40);}
+    
+    input[type=button],input[type=text],select {margin:10px 10px 10px 0;}
+    
+    #background {position: fixed;top: 0;left: 0;z-index: -1;width: 100%;height: 100%;pointer-events: none;}
+    body,textarea,#result {margin:0;}
+    .left {width: 20%;height:100%;float:left;}
+    .middle {width: 60%;height:100%; margin: 0; padding: 0;float:left;}
+    .right {width: 20%;height:100%;float:left;}
+    .middletop {width: 100%; margin:0; margin-top: 4em; padding: 0;}
+
+    #gametip {
+        color: #aaa;
+        height: 3em;
+    }
+
+
+/* copy from github-css https://github.com/sindresorhus/github-markdown-css  */
+.gametable table {
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+.gametable table {
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+.gametable table {
+    display: block;
+    width: 100%;
+    overflow: auto;
+}
+
+.gametable table th {
+    font-weight: 600;
+}
+
+.gametable table th,
+.gametable table td {
+    padding: 6px 13px;
+    border: 1px solid #dfe2e5;
+}
+
+.gametable table tr {
+    background-color: #fff;
+    border-top: 1px solid #c6cbd1;
+}
+
+.gametable table tr:nth-child(2n) {
+    background-color: #f6f8fa;
+}
+
+/* copy end ---------------------------------------------  */
+.gametable table tr {
+    border: none;
+}
+
+.gametable table td {
+    border: none;
+    padding: 0;
+    margin: 0;
+    width: 20px;
+    height: 20px;
+}
+
+.gametable table tr {
+    /* background-color: #f6f8fa; */
+}
+
+.gametable table tr:nth-child(2n+1) td:nth-child(2n),
+.gametable table tr:nth-child(2n) td:nth-child(2n+1){
+    background-color: #f6f8fa;
+}
+
+.gametable table tr:nth-child(2n) td:nth-child(2n){
+    background-color: #fff;
+    width: 48px;
+    height: 48px;
+}
+
+.gametable table tr:nth-child(2n+1) td:nth-child(2n+1){
+    background-color: #ccc;
+}
+
+.gametable table tr:nth-child(2n+1) td:nth-child(2n):hover,
+.gametable table tr:nth-child(2n) td:nth-child(2n+1):hover{
+    background-color: #efa;
+}
+
+.gametable table tr:nth-child(2n) td:nth-child(2n):hover{
+    background-color: #ffe;
+}
+
+.gametable table tr:nth-child(2n+1) td:nth-child(2n+1):hover{
+    background-color: #eeb;
+}
+
+.gametable table td div{
+    padding: 0;
+    margin: 0;
+}
+
+.gametable table tr:nth-child(2n+1) td:nth-child(2n) div{
+    width: 48px;
+    height: 20px;
+}
+.gametable table tr:nth-child(2n) td:nth-child(2n+1) div{
+    width: 20px;
+    height: 48px;
+}
+.gametable table tr:nth-child(2n) td:nth-child(2n) div{
+    width: 48px;
+    height: 48px;
+}
+
+</style></head><body><pre id="mobilecss" style="display: none;">
+    textarea,input[type=button],#result,input[type=text],select {font-size:3em}
+
+    .left {display: none;}
+    .middle {width: 100%;height:100%; margin: 0;}
+    .right {display: none;}
+
+    .middletop {display: none;}
+</pre>
+<!-- css END -->
+<script type="text/javascript">
+    isMobile=0;
+    if(navigator.userAgent.match(/(iPhone|iPod|Android|ios)/i)){
+        isMobile=1;
+    }
+    if(isMobile){
+        var cssNode=document.createElement("style");
+        cssNode.innerHTML=document.getElementById('mobilecss').innerText;
+        document.head.appendChild(cssNode);
+        //document.head.innerHTML+='<style>'+mobilecss.innerText+'</style>';
+    }
+</script>
+<canvas id="background"></canvas>
+<script>
+//背景
+(function(){
+    var background = document.getElementById('background');
+    var resize = function(){
+        var ratio = window.devicePixelRatio || 1;
+        var dc=background.getContext('2d');
+        
+        background.width = innerWidth*ratio;
+        background.height = innerHeight*ratio;
+        dc.scale(ratio, ratio);
+
+        var bsize=32+isMobile*32;
+        var fullWidth=~~((innerWidth-17)*ratio);
+        var fullHeight=~~(innerHeight*ratio);
+        
+        var fullX=~~(fullWidth/bsize)-1;
+        var fullY=~~(fullHeight/bsize)-1;
+
+        var colorA=["#f9f9f9","#fdfdfd"];
+        var colorIndex =1;
+        for(ii=0;ii<=fullX+1;ii++){
+            colorIndex=ii%2;
+            for(jj=0;jj<=fullY+1;jj++){
+                dc.fillStyle=colorA[colorIndex];
+                if(Math.random()<0.03)dc.fillStyle='#'+'ef'[~~(Math.random()*2)]+''+'ef'[~~(Math.random()*2)]+''+'ef'[~~(Math.random()*2)];
+                colorIndex=1-colorIndex;
+                dc.fillRect(ii*bsize,jj*bsize,bsize,bsize);
+            }
+        }
+    };
+    resize();
+    window.onresize = resize;
+})();
+</script>
+<div class="left">&nbsp;</div><div class="middle"><div class="middletop">&nbsp;</div><div class="main">
+
+<!-- content START -->
+
+<div class="gametable">
+    <table>
+        <tbody id="gamemap">
+<tr><td>aaa</td><td>bbb</td><td>ccc</td></tr>
+<tr><td>aaa</td><td>bbb</td><td>ccc</td></tr>
+<tr><td>aaa</td><td>bbb</td><td>ccc</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="gameinfo">
+    <div>
+        <p>先手玩家 &nbsp; score <span>0</span> &nbsp; <span>-</span></p>
+    </div>
+    <div>
+        <p>后手玩家 &nbsp; score <span>0</span> &nbsp; <span></span></p>
+    </div>
+</div>
+
+<div id="gametip">
+    
+</div>
+
+<div>
+    <span>对手: </span>
+    <select id="changePlayerSelect">
+        <option value="0">中等AI</option>
+        <!-- <option value="1">简单AI</option> -->
+        <option value="2">左右互搏</option>
+        <option value="3">网络对战</option>
+    </select>
+    <input type="button" value="悔棋" id='laststepbutton' onclick="laststep()">
+    <span>重新开始: </span>
+    <input type="button" value="先手" onclick="resetgame(1)">
+    <input type="button" value="后手" onclick="resetgame()">
+    <span>room: </span><input type="text" id="roomnum" style="width:4em;" onchange="setroom(~~roomnum.value)" value="0">
+    <br>
+    <input type="text" id="gx" value="6">
+    <br>
+    <input type="text" id="gy" value="6">
+
+    <p>点格棋: <br>双方轮流画线, 当一个格子填满时, 该玩家得分并继续走一步, 先占一半格子(向上取整)的玩家获胜<p>
+    <p>开源项目地址: <a href="https://github.com/zhaouv/pencil">https://github.com/zhaouv/pencil</a></p>
+</div>
+<!-- content END -->
+
+</div></div><div class="right">&nbsp;</div>
+
+<script>
+document.getElementsByClassName('middletop')[0].style.marginTop=~~(innerHeight/10)+'px';
+</script>
+<script src="./socket.io/socket.io.js"></script>
+<script src="./game.js"></script>
+<script src="./gamedata.js"></script>
+<script src="./player.js"></script>
+<script src="./treeSearch.js"></script>
+<script>
+////////////////// changePlayerSelect //////////////////
+var changePlayerSelect = document.getElementById('changePlayerSelect')
+var laststepbutton = document.getElementById('laststepbutton')
+changePlayerSelect.onchange=function(){
+    playerIndex=~~changePlayerSelect.value
+    // if(playerIndex===3 &&　window.location.href.indexOf(':5050')===-1)window.location='http://zhaouv.net/pencil';
+    laststepbutton.style.display=playerIndex===3?'none':''
+    player2.remove()
+    var game=gameview.game
+    player2 = new playerList[playerIndex]().init(game,gameview).bind(first2)
+    game.firstStep()
+}
+
+////////////////// resetgame //////////////////
+playerList = [OffensiveKeeperAI,GreedyRandomAI,LocalPlayer,NetworkPlayer]
+playerIndex=~~changePlayerSelect.value
+function resetgame(_first2){
+    first2=_first2?1:0; // 此处的first2是player2的先后手, 先手对应的是0
+    var game = new Game()
+    gameview.init(game)
+    player1 = new LocalPlayer().init(game,gameview).bind(1-first2)
+    player2 = new playerList[playerIndex]().init(game,gameview).bind(first2)
+    game.firstStep()
+}
+resetgame(1)
+
+////////////////// laststep //////////////////
+laststep=function(){
+    gameview.game=new ReplayController().init(gameview.game,gameview).replay('last',0,function(newgame,gameview){
+        //changePlayerSelect.value=2
+        //playerIndex=~~changePlayerSelect.value
+        newgame.lock=0
+        player1 = new LocalPlayer().init(newgame,gameview).bind(1-first2)
+        player2 = new playerList[playerIndex]().init(newgame,gameview).bind(first2)
+        newgame.firstStep()
+    }).firstStep()
+}
+
+////////////////// setroom //////////////////
+setroom=function(num){
+    num=num||0
+    NetworkPlayer.prototype.queryRoom=function(){
+        // getinput -> room, 0 for rand match
+        this.room=num
+    }
+}
+
+// player1 = new playerList[0]().init(gameview.game,gameview).bind(1-first2)
+</script>
+</body>
+</html>
