@@ -89,6 +89,18 @@ function generateOneNumber() {//生成随机的格子
     return true;
 }
 
+$(document).on("touchstart", function(e) {
+    // 判断默认行为是否可以被禁用
+    if (e.cancelable) {
+        // 判断默认行为是否已经被禁用
+        if (!e.defaultPrevented) {
+            e.preventDefault();
+        }
+    }   
+    startX = e.originalEvent.changedTouches[0].pageX,
+    startY = e.originalEvent.changedTouches[0].pageY;
+});
+
 //事件响应循环
 $(document).on("touchend", function (event) {
     /*
@@ -129,21 +141,21 @@ $(document).on("touchend", function (event) {
     moveEndY = event.originalEvent.changedTouches[0].pageY,
     X = moveEndX - startX,
     Y = moveEndY - startY;
-    if ( X > 0 ) {
+    if ( X > 0 ) {   
+        if (moveRight()) {
+            getScore();
+            generateOneNumber();//每次新增一个数字就可能出现游戏结束
+            setTimeout("isgameover()", 400);
+        }       
+    }
+    //右滑
+    else if ( X < 0 ) {
         if (moveLeft()) {
             //setTimeout("generateOneNumber()",210);
             getScore();
             generateOneNumber();//每次新增一个数字就可能出现游戏结束
             setTimeout("isgameover()", 400);//300毫秒
-        }               
-    }
-    //右滑
-    else if ( X < 0 ) {
-        if (moveRight()) {
-            getScore();
-            generateOneNumber();//每次新增一个数字就可能出现游戏结束
-            setTimeout("isgameover()", 400);
-        }    
+        } 
     }
     //下滑
     else if ( Y > 0) {
@@ -155,9 +167,11 @@ $(document).on("touchend", function (event) {
     }
     //上滑
     else if ( Y < 0 ) {
-        getScore();
-        generateOneNumber();//每次新增一个数字就可能出现游戏结束
-        setTimeout("isgameover()", 400);  
+        if (moveUp()) {
+            getScore();
+            generateOneNumber();//每次新增一个数字就可能出现游戏结束
+            setTimeout("isgameover()", 400);
+        }
     }
 });
 
