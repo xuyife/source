@@ -89,20 +89,13 @@ function generateOneNumber() {//生成随机的格子
     return true;
 }
 
-$(document).on("touchstart", function(e) {
-    // 判断默认行为是否可以被禁用
-    if (e.cancelable) {
-        // 判断默认行为是否已经被禁用
-        if (!e.defaultPrevented) {
-            e.preventDefault();
-        }
-    }   
-    startX = e.originalEvent.changedTouches[0].pageX,
-    startY = e.originalEvent.changedTouches[0].pageY;
+document.addEventListener("touchstart", function(e) {   
+    startX = e.touches[0].pageX
+    startY = e.touches[0].pageY
 });
 
 //事件响应循环
-$(document).on("touchend", function (event) {
+document.addEventListener("touchend", function (event) {
     /*
     switch (event.keyCode) {
         case 37://left
@@ -137,8 +130,8 @@ $(document).on("touchend", function (event) {
 
     }
     */
-    moveEndX = event.originalEvent.changedTouches[0].pageX,
-    moveEndY = event.originalEvent.changedTouches[0].pageY,
+    moveEndX = event.changedTouches[0].pageX
+    moveEndY = event.changedTouches[0].pageY
     X = moveEndX - startX,
     Y = moveEndY - startY;
     const absX = Math.abs(X) > Math.abs(Y)
