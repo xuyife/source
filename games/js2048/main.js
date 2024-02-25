@@ -141,7 +141,9 @@ $(document).on("touchend", function (event) {
     moveEndY = event.originalEvent.changedTouches[0].pageY,
     X = moveEndX - startX,
     Y = moveEndY - startY;
-    if ( X > 0 ) {   
+    const absX = Math.abs(X) > Math.abs(Y)
+    const absY = Math.abs(Y) > Math.abs(X)
+    if ( X > 0 && absX ) {   
         if (moveRight()) {
             getScore();
             generateOneNumber();//每次新增一个数字就可能出现游戏结束
@@ -149,7 +151,7 @@ $(document).on("touchend", function (event) {
         }       
     }
     //右滑
-    else if ( X < 0 ) {
+    else if ( X < 0 && absX ) {
         if (moveLeft()) {
             //setTimeout("generateOneNumber()",210);
             getScore();
@@ -158,7 +160,7 @@ $(document).on("touchend", function (event) {
         } 
     }
     //下滑
-    else if ( Y > 0) {
+    else if ( Y > 0 && absY) {
         if (moveDown()) {
             getScore();
             generateOneNumber();//每次新增一个数字就可能出现游戏结束
@@ -166,7 +168,7 @@ $(document).on("touchend", function (event) {
         }    
     }
     //上滑
-    else if ( Y < 0 ) {
+    else if ( Y < 0 && absY ) {
         if (moveUp()) {
             getScore();
             generateOneNumber();//每次新增一个数字就可能出现游戏结束
